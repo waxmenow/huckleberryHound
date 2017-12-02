@@ -168,16 +168,15 @@ function getmcValue(resultIndex, val, callback, p1,p2,p3) {
 }
 
 function createAppointmentRecord(startDate, availabilityStartTime, availabilityEndTime, Status) { 
-  console.log("print stuff: " + result[0]);
-    console.log("the name game " + result[0]);
- console.log("startDate insde of createAppointmentRecord:" + startDate);
+
     base('appointment').create({
         "appointmentDate": startDate,
         "availabilityStartTime": availabilityStartTime,
         "availabilityEndTime": availabilityEndTime,
         "Status": "Awaiting Assignment",
+      // group set to MIAMI record ID.. extend later for expansion.
         "group": [ "recy8zny8oO3X0mt2" ]
-     
+    
     }, function(err, record) {
         if (err) {
             console.error(err);
@@ -188,6 +187,7 @@ function createAppointmentRecord(startDate, availabilityStartTime, availabilityE
                 console.log("Schedule Record shows memberRecordId as " + value.toString());
             }
             mc.set('appointmentRecordId', record.getId(), 'expires:20000');
+
         });
 
         console.log(record.getId());
@@ -217,7 +217,7 @@ function updateAppointmentRecord(waxes) {
     }
  console.log('rightbefore update arrayofwaxes: ' + arrayofWaxes.length)
     base('appointment').update(result[1], {
-           "memberName": [result[0]],
+           "memberName": [req.session.memberRecordID],
         "servicesRequested": arrayofWaxes,
       "appointmentLocation": [result[2]]
     }, function(err, record) {
@@ -256,22 +256,19 @@ router.post('/createScheduleRecord', function(req, res) {
 router.post('/updateServices', function(req, res) {
     console.log("****** INSIDE /updateServices");
     console.log("serviceString from HTML POST: " + req.body.serviceString);
- 
   
-
-
-
     getmcValue(1,'appointmentRecordId', updateAppointmentRecord, req.body.serviceString,"peanuts","ginandtonic");
-
-
-
-
-  res.send("updateServices");
+  
+  
+  
+    res.send("updateServices");
 });
 
 router.post('/setLocation', function(req, res) {
+  //test session store of record id compare to result[0] to get rid of memjs
+  console.log("inside of setLocation route, memberRecordID from req.session is: " + req.session.memberRecordID);
     base('memberLocation').create({
-        "memberName": [result[0]],
+        "memberName": [req.session.memberRecordID],
         "addressStreet01": req.body.street_number + " " + req.body.route,
         "aptNumber": req.body.aptNumber,
         "city": req.body.locality,
